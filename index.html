@@ -6,36 +6,19 @@
 <title>My Saved Links</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-
-<!-- Facebook SDK — loads once for the whole page -->
-<div id="fb-root"></div>
-<script>
-window.fbAsyncInit = function() {
-  FB.init({ xfbml: false, version: "v21.0" });
-};
-(function(d,s,id){
-  var js,fjs=d.getElementsByTagName(s)[0];
-  if(d.getElementById(id)) return;
-  js=d.createElement(s); js.id=id;
-  js.src="https://connect.facebook.net/en_US/sdk.js";
-  fjs.parentNode.insertBefore(js,fjs);
-}(document,"script","facebook-jssdk"));
-</script>
-
 <style>
-  :root {
-    --bg:#0f0f0f; --surface:#1a1a1a; --surface2:#242424;
-    --border:rgba(255,255,255,0.08); --border-hover:rgba(255,255,255,0.2);
-    --text:#f0ede8; --muted:#666; --accent:#e8b86d;
-    --accent-dim:rgba(232,184,109,0.10);
-    --fb:#1877f2; --ig:#c13584;
-    --radius:14px; --sidebar-w:236px;
+  :root{
+    --bg:#0f0f0f;--surface:#1a1a1a;--surface2:#242424;
+    --border:rgba(255,255,255,0.08);--border-hover:rgba(255,255,255,0.2);
+    --text:#f0ede8;--muted:#666;--accent:#e8b86d;--accent-dim:rgba(232,184,109,0.10);
+    --fb:#1877f2;--ig-a:#f09433;--ig-b:#e6683c;--ig-c:#dc2743;--ig-d:#cc2366;--ig-e:#bc1888;
+    --radius:14px;--sidebar-w:236px;
   }
   *{box-sizing:border-box;margin:0;padding:0;}
   html,body{height:100%;}
   body{font-family:"DM Sans",sans-serif;background:var(--bg);color:var(--text);display:flex;height:100vh;overflow:hidden;}
 
-  /* ── SIDEBAR ── */
+  /* SIDEBAR */
   #sidebar{width:var(--sidebar-w);height:100vh;background:var(--surface);border-right:1px solid var(--border);display:flex;flex-direction:column;flex-shrink:0;overflow-y:auto;}
   #sidebar-header{padding:26px 20px 14px;border-bottom:1px solid var(--border);}
   #sidebar-header h1{font-family:"DM Serif Display",serif;font-size:19px;font-weight:400;color:var(--accent);margin-bottom:3px;}
@@ -47,7 +30,7 @@ window.fbAsyncInit = function() {
   .plat-btn:hover{border-color:var(--border-hover);color:var(--text);}
   .plat-btn.active{background:var(--accent);color:#000;border-color:var(--accent);}
   .plat-btn.fb.active{background:var(--fb);color:#fff;border-color:var(--fb);}
-  .plat-btn.ig.active{background:var(--ig);color:#fff;border-color:var(--ig);}
+  .plat-btn.ig.active{background:var(--ig-c);color:#fff;border-color:var(--ig-c);}
   .dead-toggle{display:flex;align-items:center;gap:8px;cursor:pointer;font-size:12px;color:var(--muted);margin-top:4px;}
   .dead-toggle input{cursor:pointer;accent-color:var(--accent);}
   .dead-toggle:hover{color:var(--text);}
@@ -60,7 +43,7 @@ window.fbAsyncInit = function() {
   .cat-count{font-size:10px;color:var(--muted);background:rgba(255,255,255,.05);padding:1px 6px;border-radius:10px;}
   .cat-item.active .cat-count{color:var(--accent);background:rgba(232,184,109,.12);}
 
-  /* ── MAIN ── */
+  /* MAIN */
   #main{flex:1;display:flex;flex-direction:column;min-width:0;height:100vh;overflow:hidden;}
   #topbar{background:rgba(15,15,15,.95);backdrop-filter:blur(14px);border-bottom:1px solid var(--border);padding:13px 22px;display:flex;align-items:center;gap:12px;flex-shrink:0;}
   #search-wrap{flex:1;position:relative;}
@@ -71,27 +54,25 @@ window.fbAsyncInit = function() {
   #rc{font-size:12px;color:var(--muted);white-space:nowrap;}
   #sort{background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:"DM Sans",sans-serif;font-size:12px;padding:7px 11px;outline:none;cursor:pointer;}
 
-  /* ── GRID ── */
+  /* GRID */
   #grid-wrap{flex:1;overflow-y:auto;padding:20px 22px;}
   #grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;align-items:start;}
 
-  /* ── CARD ── */
+  /* CARD */
   .card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;transition:border-color .14s;}
   .card:not(.dead):hover{border-color:var(--border-hover);}
-  .card.previewing{border-color:rgba(232,184,109,.4);grid-column:span 2;}
+  .card.previewing{border-color:rgba(232,184,109,.35);grid-column:span 2;}
   .card.dead{opacity:.38;}
 
   .card-meta{padding:12px 13px 0;display:flex;align-items:center;justify-content:space-between;gap:8px;}
   .bdg{font-size:11px;font-weight:500;padding:2px 9px;border-radius:20px;white-space:nowrap;}
   .bdg-plat{background:transparent;border:1px solid;}
   .bdg-plat.fb{color:var(--fb);border-color:rgba(24,119,242,.35);}
-  .bdg-plat.ig{color:var(--ig);border-color:rgba(193,53,132,.35);}
+  .bdg-plat.ig{color:var(--ig-c);border-color:rgba(220,39,67,.35);}
   .card-num{font-size:10px;color:var(--muted);}
-
   .card-body{padding:8px 13px 10px;}
   .card-title{font-size:13px;font-weight:500;color:var(--text);line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;margin-bottom:4px;}
   .card-desc{font-size:12px;color:var(--muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-
   .card-footer{padding:8px 13px 12px;display:flex;align-items:center;justify-content:space-between;gap:8px;}
   .cat-bdg{font-size:11px;padding:3px 9px;border-radius:20px;font-weight:500;flex-shrink:0;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
   .card-acts{display:flex;gap:6px;align-items:center;flex-shrink:0;}
@@ -102,41 +83,130 @@ window.fbAsyncInit = function() {
   .btn-ext:hover{border-color:var(--border-hover);color:var(--text);}
   .dead-tag{font-size:11px;padding:3px 9px;border-radius:20px;background:rgba(255,255,255,.04);color:#444;border:1px solid rgba(255,255,255,.06);}
 
-  /* ── PREVIEW ZONE ── */
+  /* PREVIEW ZONE */
   .prev-zone{display:none;border-top:1px solid var(--border);}
   .prev-zone.on{display:block;}
 
-  /* toolbar */
-  .pz-bar{display:flex;align-items:center;gap:8px;padding:7px 12px;background:rgba(0,0,0,.55);border-bottom:1px solid var(--border);}
-  .pz-url{font-size:11px;color:#444;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1;}
-  .pz-btns{display:flex;gap:5px;flex-shrink:0;}
-  .pz-btn{font-size:12px;width:26px;height:26px;border-radius:6px;background:transparent;border:1px solid var(--border);color:var(--muted);cursor:pointer;text-decoration:none;display:flex;align-items:center;justify-content:center;transition:all .12s;}
-  .pz-btn:hover{border-color:var(--border-hover);color:var(--text);}
+  /* ─── PROMO CARD (shared base) ─── */
+  .promo-card{
+    position:relative;
+    height:240px;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:16px;
+    padding:28px 20px;
+  }
 
-  /* content wrapper */
-  .pz-content{position:relative;background:#111;min-height:200px;}
+  /* animated scan lines overlay */
+  .promo-card::after{
+    content:"";
+    position:absolute;inset:0;
+    background:repeating-linear-gradient(
+      0deg,
+      transparent,transparent 3px,
+      rgba(0,0,0,0.08) 3px,rgba(0,0,0,0.08) 4px
+    );
+    pointer-events:none;
+    z-index:1;
+  }
 
-  /* spinner overlay */
-  .pz-spin{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;background:#111;z-index:3;transition:opacity .3s;}
-  .pz-spin.gone{opacity:0;pointer-events:none;}
-  .spinner{width:26px;height:26px;border:2px solid rgba(255,255,255,.07);border-top-color:var(--accent);border-radius:50%;animation:spin .75s linear infinite;}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .pz-spin p{font-size:12px;color:var(--muted);}
+  /* ─── FACEBOOK promo ─── */
+  .promo-fb{background:#050d1a;}
+  .promo-fb .promo-bg{
+    position:absolute;inset:0;
+    background:radial-gradient(ellipse 120% 100% at 30% 40%, rgba(24,119,242,0.45) 0%, transparent 60%),
+               radial-gradient(ellipse 80% 80% at 75% 70%, rgba(10,60,140,0.6) 0%, transparent 55%);
+    animation:fbglow 4s ease-in-out infinite alternate;
+  }
+  @keyframes fbglow{
+    from{opacity:.7;}
+    to{opacity:1;}
+  }
+  /* reel film strip lines */
+  .promo-fb .film-strip{
+    position:absolute;top:0;bottom:0;left:14px;width:18px;
+    display:flex;flex-direction:column;gap:6px;padding:8px 0;opacity:.18;
+    animation:filmscroll 2s linear infinite;
+  }
+  .promo-fb .film-strip::after{
+    content:"";position:absolute;top:0;bottom:0;right:14px;width:18px;
+    display:flex;flex-direction:column;gap:6px;padding:8px 0;
+  }
+  @keyframes filmscroll{to{transform:translateY(-50%);}}
+  .film-hole{width:10px;height:10px;border-radius:2px;background:#fff;flex-shrink:0;margin:0 auto;}
 
-  /* instagram iframe */
-  .pz-ig-frame{width:100%;min-height:540px;border:none;display:block;background:#fff;}
+  /* ─── INSTAGRAM promo ─── */
+  .promo-ig{background:#0d0010;}
+  .promo-ig .promo-bg{
+    position:absolute;inset:0;
+    background:
+      radial-gradient(ellipse 100% 80% at 20% 50%, rgba(240,148,51,.35) 0%, transparent 50%),
+      radial-gradient(ellipse 80% 100% at 80% 30%, rgba(188,24,136,.5) 0%, transparent 50%),
+      radial-gradient(ellipse 60% 60% at 50% 80%, rgba(220,39,67,.3) 0%, transparent 50%);
+    animation:igglow 3.5s ease-in-out infinite alternate;
+  }
+  @keyframes igglow{
+    from{opacity:.65;transform:scale(1);}
+    to{opacity:1;transform:scale(1.05);}
+  }
 
-  /* facebook SDK wrapper — white bg so FB widget looks right */
-  .pz-fb-wrap{background:#fff;display:flex;justify-content:center;padding:16px 0;min-height:200px;}
-  .pz-fb-wrap .fb-video,.pz-fb-wrap .fb-post{max-width:100% !important;}
+  /* ─── SHARED promo elements ─── */
+  .promo-logo{
+    position:relative;z-index:2;
+    width:52px;height:52px;border-radius:13px;
+    display:flex;align-items:center;justify-content:center;
+    font-size:26px;font-weight:700;
+    box-shadow:0 4px 24px rgba(0,0,0,0.5);
+    flex-shrink:0;
+  }
+  .promo-fb .promo-logo{background:#1877f2;color:#fff;}
+  .promo-ig .promo-logo{
+    background:linear-gradient(135deg,var(--ig-a),var(--ig-b),var(--ig-c),var(--ig-d),var(--ig-e));
+    color:#fff;
+  }
 
-  /* fallback */
-  .pz-fallback{display:none;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:40px 20px;text-align:center;}
-  .pz-fallback.on{display:flex;}
-  .pz-fallback .fi{font-size:30px;}
-  .pz-fallback h3{font-family:"DM Serif Display",serif;font-size:16px;font-weight:400;color:var(--text);}
-  .pz-fallback p{font-size:12px;color:var(--muted);line-height:1.6;max-width:280px;}
-  .btn-open-fb{display:inline-block;font-size:12px;font-weight:500;padding:8px 18px;border-radius:8px;text-decoration:none;margin-top:4px;}
+  .promo-text{position:relative;z-index:2;text-align:center;}
+  .promo-text h3{font-family:"DM Serif Display",serif;font-size:16px;font-weight:400;color:#fff;margin-bottom:4px;line-height:1.3;}
+  .promo-text p{font-size:11px;color:rgba(255,255,255,.45);}
+
+  .promo-watch-btn{
+    position:relative;z-index:2;
+    display:inline-flex;align-items:center;gap:8px;
+    font-family:"DM Sans",sans-serif;font-size:13px;font-weight:500;
+    padding:10px 24px;border-radius:24px;
+    text-decoration:none;border:none;cursor:pointer;
+    transition:transform .15s, box-shadow .15s;
+    white-space:nowrap;
+  }
+  .promo-watch-btn:hover{transform:scale(1.04);box-shadow:0 6px 24px rgba(0,0,0,0.4);}
+  .promo-watch-btn:active{transform:scale(.97);}
+  .promo-fb .promo-watch-btn{background:#1877f2;color:#fff;box-shadow:0 4px 16px rgba(24,119,242,.4);}
+  .promo-ig .promo-watch-btn{
+    background:linear-gradient(90deg,var(--ig-a),var(--ig-c),var(--ig-e));
+    color:#fff;
+    box-shadow:0 4px 16px rgba(188,24,136,.4);
+  }
+
+  /* play icon animation */
+  .play-icon{
+    width:18px;height:18px;flex-shrink:0;
+    animation:playpulse 1.8s ease-in-out infinite;
+  }
+  @keyframes playpulse{
+    0%,100%{transform:scale(1);}
+    50%{transform:scale(1.2);}
+  }
+
+  /* floating reel icon */
+  .reel-icon{
+    position:absolute;right:18px;top:50%;transform:translateY(-50%);
+    font-size:56px;opacity:.06;z-index:1;
+    animation:reelspin 8s linear infinite;
+  }
+  @keyframes reelspin{to{transform:translateY(-50%) rotate(360deg);}}
 
   #empty{display:none;text-align:center;padding:80px 20px;color:var(--muted);grid-column:1/-1;}
   #empty h3{font-family:"DM Serif Display",serif;font-size:22px;font-weight:400;margin-bottom:8px;color:var(--text);}
@@ -214,7 +284,7 @@ const CC={
 };
 function cc(c){return CC[c]||{bg:"rgba(100,100,100,.12)",t:"#888"};}
 function esc(s){return(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
-function title(l){if(l.title&&l.title!=="Facebook"&&l.title!=="Instagram")return l.title;if(l.desc)return l.desc.substring(0,80)+(l.desc.length>80?"...":"");return "Untitled";}
+function mkTitle(l){if(l.title&&l.title!=="Facebook"&&l.title!=="Instagram")return l.title;if(l.desc)return l.desc.substring(0,80)+(l.desc.length>80?"...":"");return "Untitled";}
 
 let aC="all",aP="all",hD=true,sQ="",sB="id";
 
@@ -244,129 +314,59 @@ function filtered(){
   return L;
 }
 
-// ── PREVIEW LOGIC ─────────────────────────────────────────────────────────
+function makePromo(link, titleText){
+  const isIG = link.platform === "Instagram";
+  const cls  = isIG ? "promo-ig" : "promo-fb";
+  const logo = isIG ? "&#128247;" : "f";
+  const label = isIG ? "Watch Reel on Instagram" : "Watch Reel on Facebook";
+
+  // Generate film holes for FB
+  let filmHoles = "";
+  if(!isIG){
+    for(let i=0;i<20;i++) filmHoles += `<div class="film-hole"></div>`;
+  }
+
+  return `
+    <div class="prev-zone on">
+      <div class="promo-card ${cls}">
+        <div class="promo-bg"></div>
+        ${!isIG ? `<div class="film-strip">${filmHoles}</div>` : ""}
+        <div class="reel-icon">&#127910;</div>
+        <div class="promo-logo">${logo}</div>
+        <div class="promo-text">
+          <h3>${esc(titleText.substring(0,50))}</h3>
+          <p>${link.category}</p>
+        </div>
+        <a class="promo-watch-btn" href="${esc(link.url)}" target="_blank" rel="noopener">
+          <svg class="play-icon" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M8 5v14l11-7z"/>
+          </svg>
+          ${label}
+        </a>
+      </div>
+    </div>`;
+}
 
 function togglePreview(link, card){
-  const zone=card.querySelector(".prev-zone");
-  const btn =card.querySelector(".btn-prev");
-  const isOn=zone.classList.contains("on");
+  const existing = card.querySelector(".prev-zone");
+  const btn = card.querySelector(".btn-prev");
 
-  if(isOn){
-    zone.classList.remove("on");
+  if(existing){
+    existing.remove();
     card.classList.remove("previewing");
     btn.classList.remove("on");
-    btn.innerHTML="&#9654; Preview";
-    clearZone(zone);
+    btn.innerHTML = "&#9654; Preview";
     return;
   }
 
-  zone.classList.add("on");
   card.classList.add("previewing");
   btn.classList.add("on");
-  btn.innerHTML="&#9650; Close";
-  card.scrollIntoView({behavior:"smooth",block:"nearest"});
-  loadEmbed(link, zone);
+  btn.innerHTML = "&#9650; Close";
+  card.scrollIntoView({behavior:"smooth", block:"nearest"});
+
+  const promo = makePromo(link, mkTitle(link));
+  card.insertAdjacentHTML("beforeend", promo);
 }
-
-function clearZone(zone){
-  const fb=zone.querySelector(".pz-fb-wrap");if(fb)fb.innerHTML="";
-  const ig=zone.querySelector(".pz-ig-frame");if(ig){ig.src="about:blank";}
-}
-
-function loadEmbed(link, zone){
-  const spin=zone.querySelector(".pz-spin");
-  const igFrame=zone.querySelector(".pz-ig-frame");
-  const fbWrap=zone.querySelector(".pz-fb-wrap");
-  const fallback=zone.querySelector(".pz-fallback");
-  const content=zone.querySelector(".pz-content");
-
-  // Reset
-  spin.classList.remove("gone");
-  igFrame.style.display="none";
-  fbWrap.style.display="none";
-  fallback.classList.remove("on");
-  if(fbWrap)fbWrap.innerHTML="";
-  igFrame.src="about:blank";
-
-  const type=link.embedType;
-  const code=link.embedCode;
-
-  if(!type||!code){ showFallback(link,zone); return; }
-
-  // ── INSTAGRAM ──
-  if(type==="ig-reel"||type==="ig-post"){
-    const src=type==="ig-reel"
-      ?`https://www.instagram.com/reel/${code}/embed/`
-      :`https://www.instagram.com/p/${code}/embed/`;
-    igFrame.style.display="block";
-    igFrame.onload=()=>spin.classList.add("gone");
-    igFrame.onerror=()=>showFallback(link,zone);
-    igFrame.src=src;
-    // Safety timeout
-    setTimeout(()=>spin.classList.add("gone"),8000);
-    return;
-  }
-
-  // ── FACEBOOK (SDK) ──
-  if(type==="fb-video"||type==="fb-post"){
-    fbWrap.style.display="flex";
-    const divClass=type==="fb-video"?"fb-video":"fb-post";
-    const attrs=type==="fb-video"
-      ?`data-href="${esc(code)}" data-width="auto" data-show-text="false" data-autoplay="false"`
-      :`data-href="${esc(code)}" data-width="auto" data-show-text="true"`;
-    fbWrap.innerHTML=`<div class="${divClass}" style="width:100%;" ${attrs}></div>`;
-
-    const doparse=()=>{
-      FB.XFBML.parse(fbWrap, ()=>{
-        spin.classList.add("gone");
-        // Check if FB actually rendered anything (will be an iframe inside)
-        setTimeout(()=>{
-          const iframe=fbWrap.querySelector("iframe");
-          if(!iframe||fbWrap.clientHeight<50) showFallback(link,zone);
-        },3000);
-      });
-    };
-
-    if(window.FB){doparse();}
-    else{
-      let t=0;const iv=setInterval(()=>{
-        t++;
-        if(window.FB){clearInterval(iv);doparse();}
-        else if(t>30){clearInterval(iv);showFallback(link,zone);}
-      },300);
-    }
-    setTimeout(()=>spin.classList.add("gone"),12000);
-    return;
-  }
-
-  showFallback(link,zone);
-}
-
-function showFallback(link,zone){
-  const spin=zone.querySelector(".pz-spin");
-  const fb=zone.querySelector(".pz-fb-wrap");
-  const ig=zone.querySelector(".pz-ig-frame");
-  const fallback=zone.querySelector(".pz-fallback");
-  spin.classList.add("gone");
-  if(fb)fb.style.display="none";
-  if(ig)ig.style.display="none";
-  fallback.classList.add("on");
-}
-
-window.reloadZone=function(btn){
-  const zone=btn.closest(".prev-zone");
-  const card=zone.closest(".card");
-  const id=parseInt(card.dataset.id);
-  const link=LINKS.find(l=>l.id===id);
-  if(!link)return;
-  clearZone(zone);
-  const spin=zone.querySelector(".pz-spin");
-  spin.classList.remove("gone");
-  zone.querySelector(".pz-fallback").classList.remove("on");
-  setTimeout(()=>loadEmbed(link,zone),100);
-};
-
-// ── RENDER ────────────────────────────────────────────────────────────────
 
 function render(){
   const list=filtered();
@@ -381,10 +381,8 @@ function render(){
     const c=cc(link.category);
     const dead=link.category==="Dead link";
     const pc=link.platform==="Facebook"?"fb":"ig";
-    const t=title(link);
+    const t=mkTitle(link);
     const hasD=link.desc&&link.desc!==t;
-    const isIG=link.platform==="Instagram";
-    const platColor=isIG?"#c13584":"#1877f2";
 
     const card=document.createElement("div");
     card.className="card"+(dead?" dead":"");
@@ -409,43 +407,19 @@ function render(){
             </div>`
         }
       </div>
-      ${!dead?`
-      <div class="prev-zone">
-        <div class="pz-bar">
-          <span class="pz-url">${esc(link.url)}</span>
-          <div class="pz-btns">
-            <button class="pz-btn" onclick="reloadZone(this)" title="Reload">&#8635;</button>
-            <a class="pz-btn" href="${esc(link.url)}" target="_blank" rel="noopener" title="Open original">&#8599;</a>
-          </div>
-        </div>
-        <div class="pz-content">
-          <div class="pz-spin"><div class="spinner"></div><p>Loading&hellip;</p></div>
-          <iframe class="pz-ig-frame" style="display:none;"
-            sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-presentation"
-            allowfullscreen></iframe>
-          <div class="pz-fb-wrap" style="display:none;"></div>
-          <div class="pz-fallback">
-            <div class="fi">&#127909;</div>
-            <h3>Sign in to view</h3>
-            <p>Make sure you&rsquo;re logged into ${link.platform} in this browser, then click reload &mdash; or open the original.</p>
-            <a class="btn-open-fb" href="${esc(link.url)}" target="_blank" rel="noopener"
-               style="background:${platColor};color:#fff;">
-              Open on ${link.platform}&nbsp;&#8599;
-            </a>
-          </div>
-        </div>
-      </div>`:""}
     `;
 
     if(!dead){
-      card.querySelector(".btn-prev").onclick=e=>{e.stopPropagation();togglePreview(link,card);};
+      card.querySelector(".btn-prev").onclick=e=>{
+        e.stopPropagation();
+        togglePreview(link, card);
+      };
     }
 
     grid.appendChild(card);
   });
 }
 
-// ── EVENTS ────────────────────────────────────────────────────────────────
 document.querySelectorAll(".plat-btn").forEach(b=>{
   b.onclick=()=>{aP=b.dataset.plat;document.querySelectorAll(".plat-btn").forEach(x=>x.classList.remove("active"));b.classList.add("active");render();};
 });
