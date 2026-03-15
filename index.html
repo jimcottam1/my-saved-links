@@ -427,35 +427,22 @@ function toggleEmbed(link, card){
     igWrap.appendChild(iframe);
 
   } else if(type === "fb-video" || type === "fb-post"){
-    // Facebook: use FB JS SDK XFBML
+    // Facebook: use plugin iframe (works on any domain, no App ID needed)
     fbWrap.style.display = "flex";
-    const divClass = type === "fb-video" ? "fb-video" : "fb-post";
-    const attr     = type === "fb-video"
-      ? `data-href="${esc(code)}" data-width="560" data-show-text="false" data-autoplay="false"`
-      : `data-href="${esc(code)}" data-width="560" data-show-text="true"`;
-    fbWrap.innerHTML = `<div class="${divClass}" ${attr}></div>`;
-
-    // Parse with FB SDK
-    if(window.FB){
-      FB.XFBML.parse(fbWrap, ()=>{
-        loading.classList.add("hidden");
-      });
-    } else {
-      // SDK not loaded yet — wait for it
-      let tries = 0;
-      const wait = setInterval(()=>{
-        tries++;
-        if(window.FB){
-          clearInterval(wait);
-          FB.XFBML.parse(fbWrap, ()=>{ loading.classList.add("hidden"); });
-        } else if(tries > 20){
-          clearInterval(wait);
-          loading.classList.add("hidden");
-          fbWrap.style.display = "none";
-          fallback.classList.add("visible");
-        }
-      }, 300);
-    }
+    const pluginBase = type === "fb-video"
+      ? "https://www.facebook.com/plugins/video.php?show_text=false&width=560&href="
+      : "https://www.facebook.com/plugins/post.php?show_text=true&width=560&href=";
+    const iframe = document.createElement("iframe");
+    iframe.src = pluginBase + encodeURIComponent(code);
+    iframe.width = "560";
+    iframe.height = type === "fb-video" ? "420" : "500";
+    iframe.style.border = "none";
+    iframe.style.maxWidth = "100%";
+    iframe.allowFullscreen = true;
+    iframe.allow = "autoplay; clipboard-write; encrypted-media; picture-in-picture; web-share";
+    iframe.onload = () => loading.classList.add("hidden");
+    iframe.onerror = () => { loading.classList.add("hidden"); fbWrap.style.display="none"; fallback.classList.add("visible"); };
+    fbWrap.appendChild(iframe);
   }
 }
 
