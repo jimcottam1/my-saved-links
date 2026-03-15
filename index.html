@@ -426,16 +426,20 @@ function toggleEmbed(link, card){
     iframe.onerror = () => { loading.classList.add("hidden"); igWrap.style.display="none"; fallback.classList.add("visible"); };
     igWrap.appendChild(iframe);
 
-  } else if(type === "fb-video" || type === "fb-post"){
-    // Facebook: use plugin iframe (works on any domain, no App ID needed)
+  } else if(type === "fb-video"){
+    // Facebook reels can't be embedded externally — show watch card
+    loading.classList.add("hidden");
+    fallback.classList.add("visible");
+    fallback.querySelector("h3").textContent = "Facebook Reel";
+    fallback.querySelector("p").textContent = "Reels can't be embedded outside Facebook. Click below to watch.";
+
+  } else if(type === "fb-post"){
+    // Facebook posts: plugin iframe works fine
     fbWrap.style.display = "flex";
-    const pluginBase = type === "fb-video"
-      ? "https://www.facebook.com/plugins/video.php?show_text=false&width=560&href="
-      : "https://www.facebook.com/plugins/post.php?show_text=true&width=560&href=";
     const iframe = document.createElement("iframe");
-    iframe.src = pluginBase + encodeURIComponent(code);
+    iframe.src = "https://www.facebook.com/plugins/post.php?show_text=true&width=560&href=" + encodeURIComponent(code);
     iframe.width = "560";
-    iframe.height = type === "fb-video" ? "420" : "500";
+    iframe.height = "500";
     iframe.style.border = "none";
     iframe.style.maxWidth = "100%";
     iframe.allowFullscreen = true;
