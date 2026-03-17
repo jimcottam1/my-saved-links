@@ -963,28 +963,72 @@ async function addRecipe() {
     // Step 1: Download image
     setLogStep(1, 'doing');
     let imgBase64 = uploadedImageBase64;
+
     if (!imgBase64 && imgUrl) {
-      try {
-        imgBase64 = await fetchImageBase64(imgUrl);
-      } catch(e) {
-        setLogStep(1, 'error');
-        document.getElementById('log-items').querySelector(`#log-1 .log-text`).textContent
-          = `Could not download image (${e.message}) — recipe will use placeholder`;
-        imgBase64 = null;
-        await sleep(1500);
+      // Try local server /image endpoint first (handles Facebook CDN headers)
+      if (serverOnline) {
+        try {
+          const r = await fetch(LOCAL_SERVER + '/image?url=' + encodeURIComponent(imgUrl),
+                                { signal: AbortSignal.timeout(20000) });
+          const d = await r.json();
+          if (r.ok && d.base64) {
+            imgBase64 = d.base64;
+          } else {
+            throw new Error(d.error || 'Server returned no image data');
+          }
+        } catch(e) {
+          // Server failed — try CORS proxy as last resort
+          try {
+            const r2 = await fetch(PROXY + encodeURIComponent(imgUrl), { signal: AbortSignal.timeout(12000) });
+            if (r2.ok) {
+              const buf = await r2.arrayBuffer();
+              const bytes = new Uint8Array(buf);
+              let bin = '';
+              for (let i = 0; i < bytes.length; i += 8192)
+                bin += String.fromCharCode(...bytes.subarray(i, i + 8192));
+              imgBase64 = btoa(bin);
+            }
+          } catch {}
+        }
+      } else {
+        // No server — try CORS proxy (works for non-Facebook images)
+        try {
+          const r = await fetch(PROXY + encodeURIComponent(imgUrl), { signal: AbortSignal.timeout(12000) });
+          if (r.ok) {
+            const buf = await r.arrayBuffer();
+            const bytes = new Uint8Array(buf);
+            let bin = '';
+            for (let i = 0; i < bytes.length; i += 8192)
+              bin += String.fromCharCode(...bytes.subarray(i, i + 8192));
+            imgBase64 = btoa(bin);
+          }
+        } catch {}
       }
     }
-    if (imgBase64) setLogStep(1, 'done');
-    else { setLogStep(1, 'done'); }
 
-    // Step 2: Commit image
+    if (imgBase64) {
+      setLogStep(1, 'done');
+    } else {
+      setLogStep(1, 'error');
+      document.querySelector('#log-1 .log-text').textContent =
+        imgUrl
+          ? '⚠️ Could not download thumbnail — recipe saved without image'
+          : '⚠️ No image URL provided — recipe saved without image';
+      await sleep(1000);
+    }
+
+    // Step 2: Commit image to /images folder
     setLogStep(2, 'doing');
-    let finalImgSrc = 'images/placeholder.jpg';
+    let finalImgSrc = '';
     if (imgBase64) {
       await ghPut(`images/${imgName}`, imgBase64, `Add thumbnail for recipe: ${title}`, null);
       finalImgSrc = `images/${imgName}`;
+      setLogStep(2, 'done');
+    } else {
+      document.querySelector('#log-2 .log-text').textContent = 'Skipped — no image to save';
+      setLogStep(2, 'error');
+      await sleep(500);
     }
-    setLogStep(2, 'done');
 
     // Step 3: Build card
     setLogStep(3, 'doing');
