@@ -46,6 +46,37 @@ body { font-family:'Lato',sans-serif; background:var(--cream); color:var(--text)
 }
 .btn-settings:hover { background:rgba(255,255,255,0.2); }
 
+/* ── Server status pill ── */
+.server-status {
+  display:inline-flex; align-items:center; gap:6px;
+  border-radius:999px; padding:4px 12px;
+  font-size:0.72rem; font-weight:700; letter-spacing:.5px;
+  text-transform:uppercase; border:1px solid rgba(255,255,255,0.2);
+  transition:all .3s;
+}
+.server-status .dot {
+  width:7px; height:7px; border-radius:50%; flex-shrink:0;
+}
+.server-status.checking { color:rgba(255,255,255,0.5); }
+.server-status.checking .dot { background:rgba(255,255,255,0.3); }
+.server-status.online  { color:#7eff9a; border-color:rgba(126,255,154,0.3); background:rgba(126,255,154,0.1); }
+.server-status.online  .dot { background:#7eff9a; box-shadow:0 0 6px #7eff9a; }
+.server-status.offline { color:rgba(255,255,255,0.45); }
+.server-status.offline .dot { background:rgba(255,255,255,0.25); }
+
+/* ── Server info banner ── */
+.server-banner {
+  background:#fff8ee; border:1px solid var(--gold); border-radius:var(--radius);
+  padding:14px 18px; margin-bottom:20px; font-size:0.85rem; line-height:1.6;
+  display:none;
+}
+.server-banner.visible { display:block; }
+.server-banner strong { color:var(--terra); }
+.server-banner code {
+  background:var(--warm); padding:2px 6px; border-radius:4px;
+  font-family:monospace; font-size:0.82rem;
+}
+
 /* ── Layout ── */
 .admin-body { max-width:900px; margin:0 auto; padding:32px 20px 60px; }
 
@@ -208,10 +239,19 @@ textarea { resize:vertical; min-height:80px; line-height:1.5; }
     <a class="admin-logo" href="index.html">Michelle's Recipes</a>
     <span class="admin-badge">Admin</span>
   </div>
-  <button class="btn-settings" onclick="openSettings()" title="Settings">⚙️</button>
+  <div style="display:flex;align-items:center;gap:10px">
+    <div class="server-status checking" id="server-status"><span class="dot"></span><span id="server-status-text">Checking…</span></div>
+    <button class="btn-settings" onclick="openSettings()" title="Settings">⚙️</button>
+  </div>
 </div>
 
 <div class="admin-body">
+
+  <div class="server-banner" id="server-banner">
+    💡 <strong>Tip:</strong> For Facebook &amp; Instagram links, start the local server first for best results.<br>
+    Double-click <code>start_server.bat</code> in the repo folder, then refresh this page.
+    Without it, the page will try a CORS proxy — which <em>won't</em> work for Facebook/Instagram.
+  </div>
 
   <!-- Step 1: URL -->
   <div class="card" id="step1-card">
@@ -370,9 +410,32 @@ textarea { resize:vertical; min-height:80px; line-height:1.5; }
 
 <script>
 // ── Config ──────────────────────────────────────────────────────────
-const DEFAULT_REPO = 'jimcottam1/my-saved-links';
-const PROXY        = 'https://corsproxy.io/?';
-const PROXY2       = 'https://api.allorigins.win/get?url=';
+const DEFAULT_REPO  = 'jimcottam1/my-saved-links';
+const PROXY         = 'https://corsproxy.io/?';
+const PROXY2        = 'https://api.allorigins.win/get?url=';
+const LOCAL_SERVER  = 'http://localhost:5555';
+
+let serverOnline = false;
+
+// ── Server status check ───────────────────────────────────────────────
+async function checkServer() {
+  try {
+    const res = await fetch(LOCAL_SERVER + '/ping', { signal: AbortSignal.timeout(1500) });
+    if (res.ok) {
+      serverOnline = true;
+      const el = document.getElementById('server-status');
+      el.className = 'server-status online';
+      document.getElementById('server-status-text').textContent = 'Server online';
+      document.getElementById('server-banner').classList.remove('visible');
+      return;
+    }
+  } catch {}
+  serverOnline = false;
+  const el = document.getElementById('server-status');
+  el.className = 'server-status offline';
+  document.getElementById('server-status-text').textContent = 'Server offline';
+  document.getElementById('server-banner').classList.add('visible');
+}
 
 let uploadedImageBase64 = null; // set when user uploads/drops a file
 let uploadedImageName   = null;
@@ -451,16 +514,65 @@ async function fetchMeta() {
 
   const btn = document.getElementById('fetch-btn');
   btn.disabled = true;
-  setFetchStatus('Fetching page details…');
 
+  const isSocial = /facebook\.com|instagram\.com|fb\.watch/i.test(url);
+
+  // ── Try local server first ──────────────────────────────────────────
+  if (serverOnline) {
+    setFetchStatus('Fetching via local server…');
+    try {
+      const res = await fetch(LOCAL_SERVER + '/fetch?url=' + encodeURIComponent(url),
+                              { signal: AbortSignal.timeout(20000) });
+      const data = await res.json();
+
+      if (res.ok && !data.error) {
+        document.getElementById('title-input').value    = data.title       || '';
+        document.getElementById('desc-input').value     = data.description || '';
+        document.getElementById('img-url-input').value  = data.thumbnail   || '';
+        uploadedImageBase64 = null; uploadedImageName = null;
+        if (data.thumbnail) updateImgPreview();
+        setType(detectType(url));
+        setFetchStatus('✅ Fetched via local server!', 'ok');
+        document.getElementById('step2-card').style.display = '';
+        document.getElementById('step3-card').style.display = '';
+        updatePreview();
+        btn.disabled = false;
+        return;
+      } else {
+        // Server returned an error (e.g. login wall)
+        setFetchStatus('⚠️ Server: ' + (data.error || 'Unknown error') + ' — fill in manually.', '');
+        document.getElementById('step2-card').style.display = '';
+        document.getElementById('step3-card').style.display = '';
+        setType(detectType(url));
+        updatePreview();
+        btn.disabled = false;
+        return;
+      }
+    } catch(e) {
+      // Server timed out or crashed — fall through to CORS proxy
+      serverOnline = false;
+      checkServer();
+    }
+  }
+
+  // ── Fallback: CORS proxy (works for regular websites, not FB/IG) ────
+  if (isSocial) {
+    setFetchStatus('⚠️ Facebook/Instagram needs the local server — start start_server.bat and refresh.', '');
+    document.getElementById('step2-card').style.display = '';
+    document.getElementById('step3-card').style.display = '';
+    setType(detectType(url));
+    updatePreview();
+    btn.disabled = false;
+    return;
+  }
+
+  setFetchStatus('Fetching page details…');
   try {
     let html = '';
-    // Try corsproxy.io first
     try {
       const r = await fetch(PROXY + encodeURIComponent(url), { signal: AbortSignal.timeout(12000) });
       html = await r.text();
     } catch {
-      // Fallback to allorigins
       const r = await fetch(PROXY2 + encodeURIComponent(url));
       const j = await r.json();
       html = j.contents || '';
@@ -477,23 +589,16 @@ async function fetchMeta() {
     const desc  = og('description') || extractMeta(html, 'description') || '';
     const img   = og('image:secure_url') || og('image') || '';
 
-    document.getElementById('title-input').value = title.substring(0, 150);
-    document.getElementById('desc-input').value  = desc.substring(0, 400);
-    document.getElementById('img-url-input').value = img;
-    uploadedImageBase64 = null;
-    uploadedImageName   = null;
-
+    document.getElementById('title-input').value    = title.substring(0, 150);
+    document.getElementById('desc-input').value     = desc.substring(0, 400);
+    document.getElementById('img-url-input').value  = img;
+    uploadedImageBase64 = null; uploadedImageName = null;
     if (img) updateImgPreview();
-
-    const type = detectType(url);
-    setType(type);
-
-    setFetchStatus(title ? '✅ Details fetched!' : '⚠️ Page fetched but no title found — fill in manually.', title ? 'ok' : '');
-
+    setType(detectType(url));
+    setFetchStatus(title ? '✅ Details fetched!' : '⚠️ No title found — fill in manually.', title ? 'ok' : '');
     document.getElementById('step2-card').style.display = '';
     document.getElementById('step3-card').style.display = '';
     updatePreview();
-
   } catch(e) {
     setFetchStatus('Could not fetch the page — fill in details manually.', '');
     document.getElementById('step2-card').style.display = '';
@@ -840,6 +945,9 @@ document.getElementById('url-input').addEventListener('keydown', e => {
 // ── Auto-open settings if no token ───────────────────────────────────
 window.addEventListener('load', () => {
   if (!getToken()) openSettings();
+  checkServer();
+  // Re-check every 10 seconds
+  setInterval(checkServer, 10000);
 });
 </script>
 </body>

@@ -1,0 +1,7 @@
+# Local server & scripts — not needed on GitHub Pages
+*.py
+*.bat
+requirements.txt
+__pycache__/
+*.pyc
+.env
