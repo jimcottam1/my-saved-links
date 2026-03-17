@@ -308,9 +308,9 @@ footer strong {
   <p class="hero-sub">Food & recipes shared with love</p>
   <div class="hero-divider"><span>✦</span></div>
   <div class="hero-stats">
-    <div class="stat"><span class="stat-num">44</span><span class="stat-label">Recipes</span></div>
-    <div class="stat"><span class="stat-num">43</span><span class="stat-label">Video Reels</span></div>
-    <div class="stat"><span class="stat-num">44</span><span class="stat-label">With Preview</span></div>
+    <div class="stat"><span class="stat-num" id="stat-total">—</span><span class="stat-label">Recipes</span></div>
+    <div class="stat"><span class="stat-num" id="stat-reels">—</span><span class="stat-label">Video Reels</span></div>
+    <div class="stat"><span class="stat-num" id="stat-preview">—</span><span class="stat-label">With Preview</span></div>
   </div>
 </header>
 
@@ -1411,6 +1411,31 @@ This chocolate mug cake is warm, fudgy, and ready in just a few minutes in the m
 </footer>
 
 <script>
+// Sort cards newest-first (highest data-idx first) on page load
+(function() {
+  const grid = document.getElementById('grid');
+  const empty = document.getElementById('empty');
+  const cards = [...grid.querySelectorAll('.recipe-card')];
+  cards.sort((a, b) => parseInt(b.dataset.idx) - parseInt(a.dataset.idx));
+  cards.forEach(c => grid.insertBefore(c, empty));
+})();
+
+// Update hero stats from actual card data
+(function() {
+  const cards = document.querySelectorAll('.recipe-card');
+  const total = cards.length;
+  let reels = 0, previews = 0;
+  cards.forEach(c => {
+    const href = c.querySelector('a')?.href || '';
+    if (/\/reel\/|\/share\/r\/|fb\.watch|instagram\.com\/reel/i.test(href)) reels++;
+    const img = c.querySelector('img');
+    if (img && img.src && !img.src.endsWith('placeholder.jpg') && !img.src.endsWith('#')) previews++;
+  });
+  document.getElementById('stat-total').textContent   = total;
+  document.getElementById('stat-reels').textContent   = reels;
+  document.getElementById('stat-preview').textContent = previews;
+})();
+
 let activeFilter = 'all';
 
 function setFilter(f, btn) {

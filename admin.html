@@ -1042,12 +1042,6 @@ async function addRecipe() {
 
     // Update footer count  e.g. "44 hand-picked recipes" → "45 hand-picked recipes"
     indexHtml = indexHtml.replace(/(\d+) hand-picked recipes/, (_, n) => `${parseInt(n) + 1} hand-picked recipes`);
-
-    // Update hero stat-num that looks like a recipe count (the number closest to "Recipes" label)
-    indexHtml = indexHtml.replace(
-      /(<span class="stat-num">)(\d+)(<\/span>\s*<div class="stat-label">[^<]*[Rr]ecipe)/,
-      (_, a, n, c) => `${a}${parseInt(n)+1}${c}`
-    );
     setLogStep(3, 'done');
 
     // Step 4: Commit index.html
@@ -1203,12 +1197,6 @@ async function confirmDelete() {
 
     // Update footer count
     html = html.replace(/(\d+) hand-picked recipes/, (_, n) => `${Math.max(0, parseInt(n) - 1)} hand-picked recipes`);
-
-    // Update hero stat recipe count
-    html = html.replace(
-      /(<span class="stat-num">)(\d+)(<\/span>\s*<div class="stat-label">[^<]*[Rr]ecipe)/,
-      (_, a, n, c) => `${a}${Math.max(0, parseInt(n)-1)}${c}`
-    );
 
     // Commit updated index.html
     await ghPut('index.html', textToBase64(html), `Delete recipe #${recipe.idx}: ${recipe.title}`, indexSha);
