@@ -548,6 +548,7 @@ async function checkServer() {
 
 let uploadedImageBase64 = null; // set when user uploads/drops a file
 let uploadedImageName   = null;
+let fetchedImageBase64  = null; // set when server returns thumbnail_base64 via /fetch
 
 // ── Token / Repo ─────────────────────────────────────────────────────
 function getToken() { return localStorage.getItem('recipe_gh_token') || ''; }
@@ -639,6 +640,7 @@ async function fetchMeta() {
         document.getElementById('desc-input').value     = data.description || '';
         document.getElementById('img-url-input').value  = data.thumbnail   || '';
         uploadedImageBase64 = null; uploadedImageName = null;
+        fetchedImageBase64  = data.thumbnail_base64 || null;
         if (data.thumbnail) updateImgPreview();
         setType(detectType(url));
         setFetchStatus('✅ Fetched via local server!', 'ok');
@@ -701,7 +703,7 @@ async function fetchMeta() {
     document.getElementById('title-input').value    = title.substring(0, 150);
     document.getElementById('desc-input').value     = desc.substring(0, 400);
     document.getElementById('img-url-input').value  = img;
-    uploadedImageBase64 = null; uploadedImageName = null;
+    uploadedImageBase64 = null; uploadedImageName = null; fetchedImageBase64 = null;
     if (img) updateImgPreview();
     setType(detectType(url));
     setFetchStatus(title ? '✅ Details fetched!' : '⚠️ No title found — fill in manually.', title ? 'ok' : '');
@@ -962,7 +964,7 @@ async function addRecipe() {
 
     // Step 1: Download image
     setLogStep(1, 'doing');
-    let imgBase64 = uploadedImageBase64;
+    let imgBase64 = uploadedImageBase64 || fetchedImageBase64;
 
     if (!imgBase64 && imgUrl) {
       // Try local server /image endpoint first (handles Facebook CDN headers)
@@ -1089,6 +1091,7 @@ function resetForm() {
   document.getElementById('preview-ph').style.display = '';
   uploadedImageBase64 = null;
   uploadedImageName   = null;
+  fetchedImageBase64  = null;
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
