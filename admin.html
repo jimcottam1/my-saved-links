@@ -942,23 +942,23 @@ async function addRecipe() {
   document.getElementById('success-banner').classList.remove('visible');
 
   initLog([
-    'Reading current recipe book from GitHub',
+    'Reading recipe data from GitHub',
     'Downloading thumbnail image',
     'Saving image to GitHub',
-    'Inserting new recipe card',
-    'Committing updated recipe book'
+    'Updating recipe data',
+    'Committing recipe data'
   ]);
 
   try {
-    // Step 0: Read index.html
+    // Step 0: Read recipes.json
     setLogStep(0, 'doing');
-    const indexData = await ghGet('index.html');
-    const indexSha  = indexData.sha;
-    let   indexHtml = base64ToText(indexData.content);
+    const jsonData = await ghGet('recipes.json');
+    const jsonSha  = jsonData.sha;
+    const recipes  = JSON.parse(base64ToText(jsonData.content));
     setLogStep(0, 'done');
 
     // Work out next index number
-    const allIdx = [...indexHtml.matchAll(/data-idx="(\d+)"/g)].map(m => parseInt(m[1]));
+    const allIdx = recipes.map(r => r.idx);
     const nextIdx = allIdx.length ? Math.max(...allIdx) + 1 : 1;
     const imgName = `recipe_${String(nextIdx).padStart(2,'0')}.jpg`;
 
@@ -1032,21 +1032,14 @@ async function addRecipe() {
       await sleep(500);
     }
 
-    // Step 3: Build card
+    // Step 3: Add to recipe list
     setLogStep(3, 'doing');
-    const cardHtml = buildCardHtml(nextIdx, url, finalImgSrc, title, desc, type);
-
-    // Insert before <div id="empty">
-    if (!indexHtml.includes('<div id="empty">')) throw new Error('Could not find insertion point in index.html');
-    indexHtml = indexHtml.replace('<div id="empty">', cardHtml + '\n  <div id="empty">');
-
-    // Update footer count  e.g. "44 hand-picked recipes" → "45 hand-picked recipes"
-    indexHtml = indexHtml.replace(/(\d+) hand-picked recipes/, (_, n) => `${parseInt(n) + 1} hand-picked recipes`);
+    recipes.push({ idx: nextIdx, url, title, description: desc, image: finalImgSrc, type });
     setLogStep(3, 'done');
 
-    // Step 4: Commit index.html
+    // Step 4: Commit recipes.json
     setLogStep(4, 'doing');
-    await ghPut('index.html', textToBase64(indexHtml), `Add recipe: ${title}`, indexSha);
+    await ghPut('recipes.json', textToBase64(JSON.stringify(recipes, null, 2)), `Add recipe: ${title}`, jsonSha);
     setLogStep(4, 'done');
 
     // Success!
@@ -1113,27 +1106,10 @@ async function loadManage() {
   count.textContent = 'Loading…';
 
   try {
-    const indexData = await ghGet('index.html');
-    const html = base64ToText(indexData.content);
-
-    // Parse all article blocks
-    const articleRe = /<article class="recipe-card"[^>]*data-idx="(\d+)"[^>]*>([\s\S]*?)<\/article>/g;
-    const recipes = [];
-    let m;
-    while ((m = articleRe.exec(html)) !== null) {
-      const idx = m[1];
-      const body = m[2];
-      const titleM = body.match(/class="recipe-title"[^>]*>([^<]+)</);
-      const imgM   = body.match(/img src="([^"]+)"/);
-      const urlM   = body.match(/href="([^"]+)"/);
-      recipes.push({
-        idx,
-        title:      titleM ? titleM[1].trim() : 'Untitled',
-        imgSrc:     imgM   ? imgM[1]   : '',
-        url:        urlM   ? urlM[1]   : '',
-        fullMatch:  m[0],
-      });
-    }
+    const jsonData = await ghGet('recipes.json');
+    const recipes  = JSON.parse(base64ToText(jsonData.content));
+    // Newest first in manage view
+    recipes.sort((a, b) => b.idx - a.idx);
 
     count.textContent = recipes.length + ' recipes';
 
@@ -1145,17 +1121,17 @@ async function loadManage() {
     list.innerHTML = recipes.map(r => `
       <div class="recipe-row" id="row-${r.idx}">
         <div class="recipe-row-thumb">
-          <img src="${r.imgSrc}" alt="" onerror="this.style.display='none'"/>
+          <img src="${r.image || ''}" alt="" onerror="this.style.display='none'"/>
         </div>
         <div class="recipe-row-info">
           <div class="recipe-row-title">${r.title}</div>
           <div class="recipe-row-meta">#${r.idx} &nbsp;·&nbsp; <a href="${r.url}" target="_blank" rel="noopener" style="color:var(--terra)">view ↗</a></div>
         </div>
-        <button class="btn-delete" onclick="promptDelete('${r.idx}')">🗑 Delete</button>
+        <button class="btn-delete" onclick="promptDelete(${r.idx})">🗑 Delete</button>
       </div>`
     ).join('');
 
-    // Store parsed recipes for delete lookup
+    // Store for delete lookup
     window._recipes = recipes;
 
   } catch(e) {
@@ -1168,7 +1144,7 @@ function promptDelete(idx) {
   const recipe = (window._recipes || []).find(r => r.idx === idx);
   if (!recipe) return;
   pendingDelete = recipe;
-  document.getElementById('confirm-thumb-img').src = recipe.imgSrc || '';
+  document.getElementById('confirm-thumb-img').src = recipe.image || '';
   document.getElementById('confirm-msg').textContent =
     `"${recipe.title}" will be removed from the site. This cannot be undone.`;
   document.getElementById('confirm-modal').classList.add('open');
@@ -1187,24 +1163,21 @@ async function confirmDelete() {
   btn.textContent = 'Deleting…';
 
   try {
-    // Read current index.html
-    const indexData = await ghGet('index.html');
-    const indexSha  = indexData.sha;
-    let   html      = base64ToText(indexData.content);
+    // Read current recipes.json
+    const jsonData = await ghGet('recipes.json');
+    const jsonSha  = jsonData.sha;
+    const recipes  = JSON.parse(base64ToText(jsonData.content));
 
-    // Remove the article block
-    html = html.replace(recipe.fullMatch, '');
+    // Remove the recipe
+    const updated = recipes.filter(r => r.idx !== recipe.idx);
 
-    // Update footer count
-    html = html.replace(/(\d+) hand-picked recipes/, (_, n) => `${Math.max(0, parseInt(n) - 1)} hand-picked recipes`);
-
-    // Commit updated index.html
-    await ghPut('index.html', textToBase64(html), `Delete recipe #${recipe.idx}: ${recipe.title}`, indexSha);
+    // Commit updated recipes.json
+    await ghPut('recipes.json', textToBase64(JSON.stringify(updated, null, 2)), `Delete recipe #${recipe.idx}: ${recipe.title}`, jsonSha);
 
     // Try to delete the image file from GitHub (best effort)
-    if (recipe.imgSrc && recipe.imgSrc.startsWith('images/')) {
+    if (recipe.image && recipe.image.startsWith('images/')) {
       try {
-        const imgPath = recipe.imgSrc;
+        const imgPath = recipe.image;
         const imgData = await ghGet(imgPath);
         const [owner, repo] = getRepo().split('/');
         await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${imgPath}`, {
