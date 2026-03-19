@@ -374,5 +374,13 @@
     "description": "This healthy date cheesecake is creamy, delicious and sweetened without any sugar! You only 5 ingredients to make this incredible dessert!",
     "image": "images/recipe_47.jpg",
     "type": "web"
+  },
+  {
+    "idx": 48,
+    "url": "https://www.facebook.com/reel/1280422510721543",
+    "title": "Facebook",
+    "description": "High-Protein Carrot Cake Bars ( WOW )\n\nCrust:\n• 1 cup walnuts\n• ⅓ cup shredded coconut\n• 3 tbsp almond flour\n• 1 cup pitted dates\n• 1 tsp cinnamon\n• 1 tsp ginger\n• ⅓ cup grated carrot\n\nFilling:\n• 2...",
+    "image": "images/recipe_48.jpg",
+    "type": "fb-reel"
   }
 ]
