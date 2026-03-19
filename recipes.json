@@ -406,5 +406,13 @@
     "description": "",
     "image": "images/recipe_51.jpg",
     "type": "web"
+  },
+  {
+    "idx": 52,
+    "url": "https://www.facebook.com/reel/2689571634750412",
+    "title": "Facebook",
+    "description": "Spinach and cheese calzone 🧀  [High AF protein]\n\nThe Chicken:\n200g ground chicken breast\n1 tsp onion Powder\n1 tsp garlic powder\ndash salt & pepper\n15 gm parmigiano reggiano, grated on top\n\nThe...",
+    "image": "images/recipe_52.jpg",
+    "type": "fb-reel"
   }
 ]
