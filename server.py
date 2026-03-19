@@ -150,13 +150,31 @@ def fetch():
                         break
 
             thumbnail = ""
-            for sel in ['meta[property="og:image:secure_url"]', 'meta[property="og:image"]']:
+            for sel in ['meta[property="og:image:secure_url"]', 'meta[property="og:image"]',
+                        'meta[name="twitter:image"]']:
                 el = page.query_selector(sel)
                 if el:
                     val = (el.get_attribute("content") or "").strip()
                     if val:
                         thumbnail = val
                         break
+
+            # Fallback: first large <img> in article/main content
+            if not thumbnail:
+                for sel in ['article img', 'main img', '.entry-content img', '.post-content img', 'img']:
+                    el = page.query_selector(sel)
+                    if el:
+                        val = (el.get_attribute("src") or "").strip()
+                        if val and not val.endswith('.svg') and 'logo' not in val.lower():
+                            # Make absolute if relative
+                            if val.startswith('//'):
+                                val = 'https:' + val
+                            elif val.startswith('/'):
+                                from urllib.parse import urlparse
+                                p = urlparse(url)
+                                val = f"{p.scheme}://{p.netloc}{val}"
+                            thumbnail = val
+                            break
 
             if looks_dead(title, description):
                 return jsonify({
