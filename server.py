@@ -168,7 +168,7 @@ def fetch():
             thumbnail_base64 = ""
             if thumbnail:
                 try:
-                    img_response = page.request.get(thumbnail, timeout=15000)
+                    img_response = page.request.get(thumbnail, timeout=15000, headers={"Referer": url})
                     if img_response.ok:
                         thumbnail_base64 = b64mod.b64encode(img_response.body()).decode("ascii")
                         print(f"  ImgSize:  {len(thumbnail_base64)} chars base64")
